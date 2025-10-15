@@ -1,123 +1,245 @@
 <!doctype html>
 <html lang="vi">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>20-10</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video Player</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
+    :root {
+      --bg: #0b0b0b;
+      --card: #111;
+      --accent: #1e90ff;
+      --muted: #bbb
+    }
+
+    html,
+    body {
       height: 100%;
-      overflow: hidden;
-      background: black;
+      margin: 0;
+      font-family: system-ui, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      color: #fff;
+      background: linear-gradient(180deg, #050505, var(--bg));
     }
 
-    video {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform-origin: center center;
-      object-fit: cover;
-      display: none;
-      background: black;
-      transition: transform 0.3s ease;
-    }
-
-    #overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      color: white;
-      font-size: 1.4rem;
+    .wrap {
+      min-height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      cursor: pointer;
-      z-index: 10;
-      user-select: none;
+      padding: 24px;
+      box-sizing: border-box
     }
 
-    #note {
-      position: fixed;
-      bottom: 8px;
-      right: 8px;
-      color: #ccc;
-      font-size: 0.8rem;
-      font-style: italic;
-      display: none;
+    .player-card {
+      width: 100%;
+      max-width: 960px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.7)
+    }
+
+    .video-frame {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: black
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      background: black
+    }
+
+    /* controls */
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 6px
+    }
+
+    .btn {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 600
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff
+    }
+
+    .btn:active {
+      transform: translateY(1px)
+    }
+
+    .info {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    /* fullscreen styles (when the player element goes fullscreen it will naturally be full screen) */
+    :fullscreen .player-card {
+      width: 100vw;
+      height: 100vh;
+      max-width: none;
+      border-radius: 0;
+      padding: 0
+    }
+
+    :-webkit-full-screen .player-card {
+      width: 100vw;
+      height: 100vh;
+      max-width: none;
+      border-radius: 0;
+      padding: 0
+    }
+
+    /* small helpers */
+    .range {
+      width: 220px
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    @media (max-width:520px) {
+      .range {
+        width: 120px
+      }
+
+      .controls {
+        flex-wrap: wrap
+      }
     }
   </style>
 </head>
-<body>
-  <video id="myVideo" playsinline preload="auto">
-    <source src="a.mp4" type="video/mp4">
-    Trình duyệt không hỗ trợ video.
-  </video>
 
-  <div id="overlay">▶️ Nhấn để phát video</div>
-  <div id="note">Zalo không hỗ trợ xoay toàn màn hình</div>
+<body>
+  <div class="wrap">
+    <div class="player-card" id="playerCard">
+      <div class="video-frame" id="videoFrame">
+        <!-- Thay src bằng link video của bạn (mp4, webm...) -->
+        <video id="video" controls playsinline preload="metadata" poster="">
+          <source src="a.mp4" type="video/mp4">
+          Trình duyệt của bạn không hỗ trợ thẻ video.
+        </video>
+      </div>
+
+      <!-- <div class="controls">
+        <button class="btn" id="playPause">Play</button>
+        <div class="row">
+          <label for="seek" style="font-size:13px;color:var(--muted)">Đến:</label>
+          <input id="seek" class="range" type="range" min="0" max="100" value="0">
+        </div>
+
+        <button class="btn" id="mute">Mute</button>
+        <input id="vol" type="range" min="0" max="1" step="0.05" value="1" style="width:100px">
+
+        <button class="btn primary" id="fsBtn">Toàn màn hình</button>
+
+        <div class="info">Phím tắt: <strong>F</strong> / Double-click</div>
+      </div> -->
+    </div>
+  </div>
 
   <script>
-    const video = document.getElementById('myVideo');
-    const overlay = document.getElementById('overlay');
-    const note = document.getElementById('note');
+    // Elements
+    const video = document.getElementById('video');
+    const playPauseBtn = document.getElementById('playPause');
+    const muteBtn = document.getElementById('mute');
+    const vol = document.getElementById('vol');
+    const fsBtn = document.getElementById('fsBtn');
+    const seek = document.getElementById('seek');
+    const playerCard = document.getElementById('playerCard');
+    const videoFrame = document.getElementById('videoFrame');
 
-    const isZalo = /zalo/i.test(navigator.userAgent);
+    // Play/pause
+    function updatePlayButton() { playPauseBtn.textContent = video.paused ? 'Play' : 'Pause' }
+    playPauseBtn.addEventListener('click', () => { if (video.paused) video.play(); else video.pause(); updatePlayButton(); });
+    video.addEventListener('play', updatePlayButton);
+    video.addEventListener('pause', updatePlayButton);
 
-    overlay.addEventListener('click', async () => {
-      overlay.style.display = 'none';
-      video.style.display = 'block';
-      
+    // Mute/volume
+    muteBtn.addEventListener('click', () => { video.muted = !video.muted; muteBtn.textContent = video.muted ? 'Unmute' : 'Mute'; });
+    vol.addEventListener('input', () => { video.volume = vol.value; video.muted = video.volume === 0; muteBtn.textContent = video.muted ? 'Unmute' : 'Mute'; });
+
+    // Seek bar
+    video.addEventListener('loadedmetadata', () => { seek.max = Math.floor(video.duration); });
+    video.addEventListener('timeupdate', () => { if (!seek.dragging) seek.value = Math.floor(video.currentTime); });
+    seek.addEventListener('input', () => { seek.dragging = true; });
+    seek.addEventListener('change', () => { video.currentTime = seek.value; seek.dragging = false; });
+
+    // Fullscreen toggle with proper browser prefix handling
+    async function enterFullscreen(el) {
+      if (el.requestFullscreen) return el.requestFullscreen();
+      if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+      if (el.msRequestFullscreen) return el.msRequestFullscreen();
+      // iOS Safari: try video.webkitEnterFullscreen (works only on <video>)
+      if (video.webkitEnterFullscreen) return video.webkitEnterFullscreen();
+      return Promise.reject(new Error('Fullscreen API không được hỗ trợ'));
+    }
+
+    async function exitFullscreen() {
+      if (document.exitFullscreen) return document.exitFullscreen();
+      if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+      if (document.msExitFullscreen) return document.msExitFullscreen();
+      return Promise.reject(new Error('Fullscreen API không được hỗ trợ'));
+    }
+
+    function isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement); }
+
+    fsBtn.addEventListener('click', async () => {
       try {
-        await video.play();
-      } catch (err) {
-        console.error('Không phát được video:', err);
-      }
-
-      // Nếu không phải Zalo thì bật fullscreen
-      if (!isZalo) {
-        requestFullscreen(video);
-      } else {
-        // Nếu là Zalo thì hiện ghi chú nhỏ
-        note.style.display = 'block';
-      }
-
-      adjustOrientation();
+        if (!isFullscreen()) await enterFullscreen(playerCard);
+        else await exitFullscreen();
+      } catch (e) { console.warn(e); alert('Không thể bật toàn màn hình trên trình duyệt này.'); }
     });
 
-    window.addEventListener('orientationchange', adjustOrientation);
-    window.addEventListener('resize', adjustOrientation);
+    // Double-click toggles fullscreen
+    videoFrame.addEventListener('dblclick', async () => { fsBtn.click(); });
 
-    function adjustOrientation() {
-      if (isZalo) {
-        // 👉 Zalo: chỉ căn giữa, không xoay
-        video.style.transform = 'translate(-50%, -50%)';
-        video.style.width = '100vw';
-        video.style.height = '100vh';
-        return;
+    // Keyboard shortcut: F toggles fullscreen, Space toggles play/pause
+    document.addEventListener('keydown', async (e) => {
+      if (e.key.toLowerCase() === 'f') {
+        e.preventDefault(); fsBtn.click();
       }
-
-      const isPortrait = window.innerHeight > window.innerWidth;
-
-      if (isPortrait) {
-        video.style.transform = 'translate(-50%, -50%) rotate(90deg)';
-        video.style.width = `${window.innerHeight}px`;
-        video.style.height = `${window.innerWidth}px`;
-      } else {
-        video.style.transform = 'translate(-50%, -50%) rotate(0deg)';
-        video.style.width = `${window.innerWidth}px`;
-        video.style.height = `${window.innerHeight}px`;
+      if (e.code === 'Space') {
+        e.preventDefault(); if (video.paused) video.play(); else video.pause();
       }
-    }
+    });
 
-    function requestFullscreen(el) {
-      if (el.requestFullscreen) el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-      else if (el.msRequestFullscreen) el.msRequestFullscreen();
-      else if (el.webkitEnterFullscreen) el.webkitEnterFullscreen(); // iPhone
-    }
+    // Update FS button text when fullscreen changes
+    ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(evt => {
+      document.addEventListener(evt, () => { fsBtn.textContent = isFullscreen() ? 'Thoát toàn màn hình' : 'Toàn màn hình'; });
+    });
+
+    // Mobile: some browsers won't allow programmatic play without user gesture
+    // We keep controls attribute and playsinline so mobile browsers behave better.
+
+    // Accessibility: focus styles for keyboard users
+    document.querySelectorAll('.btn').forEach(b => { b.addEventListener('focus', () => b.style.outline = '2px solid rgba(30,144,255,0.6)'); b.addEventListener('blur', () => b.style.outline = 'none'); });
+
+    // Initial state
+    updatePlayButton();
+    muteBtn.textContent = video.muted ? 'Unmute' : 'Mute';
+
+    // Tip: để dùng video từ server khác, có thể thay src lên CORS-enabled host hoặc đặt file trên cùng server.
   </script>
 </body>
+
 </html>
