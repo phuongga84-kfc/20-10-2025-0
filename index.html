@@ -46,7 +46,7 @@
     Trình duyệt không hỗ trợ video.
   </video>
 
-  <div id="overlay">▶️ Nhấn để phát video</div>
+  <div id="overlay">Bắt đầu</div>
 
   <script>
     const video = document.getElementById('myVideo');
@@ -63,8 +63,11 @@
         console.error('Không phát được video:', err);
       }
 
-      // Cố gắng mở toàn màn hình
-      requestFullscreen(video);
+      // Chỉ bật fullscreen nếu KHÔNG phải trình duyệt Zalo
+      if (!isZaloBrowser()) {
+        requestFullscreen(video);
+      }
+
       adjustOrientation();
     });
 
@@ -99,6 +102,12 @@
       } else if (el.webkitEnterFullscreen) {
         el.webkitEnterFullscreen(); // iPhone
       }
+    }
+
+    // Phát hiện trình duyệt Zalo (trong user agent)
+    function isZaloBrowser() {
+      const ua = navigator.userAgent.toLowerCase();
+      return ua.includes('zalo');
     }
   </script>
 </body>
