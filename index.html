@@ -1,107 +1,105 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Xoay video đúng hướng</title>
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden;
-        background: black;
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>20-10</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background: black;
+    }
+
+    video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: center center;
+      object-fit: cover;
+      display: none;
+      transition: transform 0.3s ease;
+      background: black;
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      z-index: 10;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <video id="myVideo" playsinline>
+    <source src="a.mp4" type="video/mp4">
+    Trình duyệt không hỗ trợ video.
+  </video>
+
+  <div id="overlay">▶️ Nhấn để phát video</div>
+
+  <script>
+    const video = document.getElementById('myVideo');
+    const overlay = document.getElementById('overlay');
+
+    overlay.addEventListener('click', async () => {
+      overlay.style.display = 'none';
+      video.style.display = 'block';
+      
+      // Phát video
+      try {
+        await video.play();
+      } catch (err) {
+        console.error('Không phát được video:', err);
       }
 
-      video {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform-origin: center center;
-        object-fit: cover;
-        display: none;
-        transition: transform 0.3s ease;
-        background: black;
+      // Cố gắng mở toàn màn hình
+      requestFullscreen(video);
+      adjustOrientation();
+    });
+
+    // Theo dõi thay đổi hướng thiết bị
+    window.addEventListener('orientationchange', adjustOrientation);
+    window.addEventListener('resize', adjustOrientation);
+
+    function adjustOrientation() {
+      const isPortrait = window.innerHeight > window.innerWidth;
+
+      if (isPortrait) {
+        // Máy đang dọc → xoay video ngang
+        video.style.transform = 'translate(-50%, -50%) rotate(90deg)';
+        video.style.width = `${window.innerHeight}px`;
+        video.style.height = `${window.innerWidth}px`;
+      } else {
+        // Máy ngang → để nguyên
+        video.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+        video.style.width = `${window.innerWidth}px`;
+        video.style.height = `${window.innerHeight}px`;
       }
+    }
 
-      #overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        font-size: 1.4rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        cursor: pointer;
-        z-index: 10;
-        user-select: none;
+    // Hàm mở fullscreen tương thích đa trình duyệt
+    function requestFullscreen(el) {
+      if (el.requestFullscreen) {
+        el.requestFullscreen();
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen(); // Safari
+      } else if (el.msRequestFullscreen) {
+        el.msRequestFullscreen(); // IE/Edge
+      } else if (el.webkitEnterFullscreen) {
+        el.webkitEnterFullscreen(); // iPhone
       }
-    </style>
-  </head>
-  <body>
-    <video id="myVideo" playsinline>
-      <source src="a.mp4" type="video/mp4" />
-      Trình duyệt không hỗ trợ video.
-    </video>
-
-    <div id="overlay">▶️ Nhấn để phát video</div>
-
-    <script>
-      const video = document.getElementById("myVideo");
-      const overlay = document.getElementById("overlay");
-
-      overlay.addEventListener("click", async () => {
-        overlay.style.display = "none";
-        video.style.display = "block";
-
-        // ✅ Gọi fullscreen TRƯỚC khi play()
-        requestFullscreen(video);
-
-        // ✅ Sau đó mới phát video
-        try {
-          await video.play();
-        } catch (err) {
-          console.error("Không phát được video:", err);
-        }
-
-        adjustOrientation();
-      });
-
-      // Theo dõi thay đổi hướng thiết bị
-      window.addEventListener("orientationchange", adjustOrientation);
-      window.addEventListener("resize", adjustOrientation);
-
-      function adjustOrientation() {
-        const isPortrait = window.innerHeight > window.innerWidth;
-
-        if (isPortrait) {
-          // Máy đang dọc → xoay video ngang
-          video.style.transform = "translate(-50%, -50%) rotate(90deg)";
-          video.style.width = `${window.innerHeight}px`;
-          video.style.height = `${window.innerWidth}px`;
-        } else {
-          // Máy ngang → để nguyên
-          video.style.transform = "translate(-50%, -50%) rotate(0deg)";
-          video.style.width = `${window.innerWidth}px`;
-          video.style.height = `${window.innerHeight}px`;
-        }
-      }
-
-      // Hàm mở fullscreen tương thích đa trình duyệt
-      function requestFullscreen(el) {
-        if (el.requestFullscreen) {
-          el.requestFullscreen();
-        } else if (el.webkitRequestFullscreen) {
-          el.webkitRequestFullscreen(); // Safari
-        } else if (el.msRequestFullscreen) {
-          el.msRequestFullscreen(); // IE/Edge
-        } else if (el.webkitEnterFullscreen) {
-          el.webkitEnterFullscreen(); // iPhone
-        }
-      }
-    </script>
-  </body>
+    }
+  </script>
+</body>
 </html>
